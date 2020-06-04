@@ -1,5 +1,6 @@
 from room import Room
 from player import Player
+from item import Item
 from color import Color
 
 # Declare all the rooms
@@ -23,7 +24,10 @@ chamber! Sadly, it has already been completely emptied by
 earlier adventurers. The only exit is to the south."""),
 }
 
-
+items = {
+    'axe': Item("Axe", "has some rust, but still sharp."),
+    'rock': Item("Rock", "the rock is the size of my fist, but looks pretty usless")
+}
 # Link rooms together
 
 room['outside'].n_to = room['foyer']
@@ -35,10 +39,10 @@ room['narrow'].w_to = room['foyer']
 room['narrow'].n_to = room['treasure']
 room['treasure'].s_to = room['narrow']
 
-# Main
+# creates items in game
 
-# * Prints the current description (the textwrap module might be useful here).
-# * Waits for user input and decides what to do.
+room['outside'].setItems(items["axe"], items["rock"])
+room['foyer'].setItems(items["rock"])
 
 # input massage panel
 inputMessage = f"""
@@ -81,7 +85,7 @@ def showLocation():
 name = input(f"\n{Color.YELLOW}Hello there! What is your name?{Color.END}\n")
 
 if name == '':
-    print("hey, tell me your name!")
+    print(f"{Color.RED}If your not telling, then we are not playing!{Color.END}")
 else:
     player = Player(name, "outside")
 
@@ -114,6 +118,30 @@ else:
         elif userInput == 'f':
             print("------------------------------------------")
             print(f"\n{Color.CYAN}Respects Paid.{Color.END}")
+        elif userInput == 'k':
+            # pickup items from room
+            print("------------------------------------------")
+            while not userInput == 'g':
+                print(f"\n{room[player.current].callItems()}\n")
+                userInput = input("[g] Go Back [h] Help\n")
+                if userInput == 'h':
+                    print("\nto pickup an item, enter the number\n")
+                if userInput == 'g':
+                    pass
+                elif userInput > "0":
+                    room[player.current].grabItem(userInput)
+        elif userInput == 'i':
+            # checks inventory
+            print("------------------------------------------")
+            while not userInput == 'g':
+                print(f"\n{room[player.current].callItems()}\n")
+                userInput = input("[g] Go Back [h] Help\n")
+                if userInput == 'h':
+                    print("\nto drop an item, enter the number\n")
+                if userInput == 'g':
+                    pass
+                elif userInput > "0":
+                    room[player.current].dropItem(userInput) #work on this
         else:
             print("------------------------------------------")
             print(f"\n{Color.RED}Sorry, that is not a valid input{Color.END}")
