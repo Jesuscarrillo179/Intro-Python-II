@@ -1,4 +1,6 @@
 from room import Room
+from player import Player
+from color import Color
 
 # Declare all the rooms
 
@@ -33,19 +35,90 @@ room['narrow'].w_to = room['foyer']
 room['narrow'].n_to = room['treasure']
 room['treasure'].s_to = room['narrow']
 
-#
 # Main
-#
 
-# Make a new player object that is currently in the 'outside' room.
-
-# Write a loop that:
-#
-# * Prints the current room name
 # * Prints the current description (the textwrap module might be useful here).
 # * Waits for user input and decides what to do.
-#
-# If the user enters a cardinal direction, attempt to move to the room there.
-# Print an error message if the movement isn't allowed.
-#
-# If the user enters "q", quit the game.
+
+# input massage panel
+inputMessage = f"""
+     {Color.GREEN}[w]{Color.END} North        {Color.CYAN}[i]{Color.END} Inventory\n
+{Color.YELLOW}[a]{Color.END} West  {Color.YELLOW}[d]{Color.END} East    {Color.PINK}[l]{Color.END} Current Location\n
+     {Color.YELLOW}[s]{Color.END} South        {Color.PURPLE}[k]{Color.END} Location Items\n 
+{Color.BLUE}[m]{Color.END} Map    {Color.RED}[q]{Color.END} Quit   {Color.GREEN}[f]{Color.END} Pay respects
+"""
+
+# checks if route is available
+def checkRoute(direction):
+    value = getattr(room[player.current], direction)
+    if not value == None:
+        for key, val in room.items():
+            if val == value:
+                player.current = key
+                print(f"\nyou went to {Color.YELLOW}{room[player.current].name}{Color.END}.")
+    else:
+        print("\nSorry, you cannot go there!")
+
+# shows map
+def showMap():
+    compass = {
+    'North':'n_to',
+    'South':'s_to',
+    'East':'e_to',
+    'West':'w_to'
+    }
+    print(f"\n{Color.YELLOW}Available Routes:{Color.END}\n")
+    for key, val in compass.items():
+        value = getattr(room[player.current] , val)
+        if not value == None:
+            print(f"{Color.GREEN}{key}:{Color.END}\n  {value}\n")
+
+# shows current location
+def showLocation():
+    print(f"\n{room[player.current]}\n{Color.CYAN}Description:{Color.END} {room[player.current].description}")
+
+# welcomes player
+name = input(f"\n{Color.YELLOW}Hello there! What is your name?{Color.END}\n")
+
+if name == '':
+    print("hey, tell me your name!")
+else:
+    player = Player(name, "outside")
+
+    print(f"\nWelcome {Color.GREEN}{player.name}{Color.END}! Choose your path and start your adventure!\n")
+    userInput = input(f"{inputMessage}\n")
+    while not userInput == 'q':
+        north = 'n_to'
+        south = 's_to'
+        east = 'e_to'
+        west = 'w_to'
+
+        if userInput == 'w':
+            print("------------------------------------------")
+            checkRoute(north)
+        elif userInput == 's':
+            print("------------------------------------------")            
+            checkRoute(south)
+        elif userInput == 'd':
+            print("------------------------------------------")
+            checkRoute(east)
+        elif userInput == 'a':
+            print("------------------------------------------")
+            checkRoute(west)
+        elif userInput == 'm':
+            print("------------------------------------------")
+            showMap()
+        elif userInput == 'p':
+            print("------------------------------------------")
+            showLocation()
+        elif userInput == 'f':
+            print("------------------------------------------")
+            print(f"\n{Color.CYAN}Respects Paid.{Color.END}")
+        else:
+            print("------------------------------------------")
+            print(f"\n{Color.RED}Sorry, that is not a valid input{Color.END}")
+
+        userInput = input(f"{inputMessage}\n")
+
+    print(f"\n{Color.RED}game over.{Color.END}")
+
