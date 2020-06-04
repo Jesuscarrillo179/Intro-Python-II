@@ -2,7 +2,6 @@
 # description attributes.
 from color import Color
 from item import Item
-from player import Player
 
 class Room:
     def __init__(self, name, description):
@@ -22,20 +21,13 @@ class Room:
         return self.items
     
     def callItems(self):
-        index = 0
-        for item in self.items:
-            if not item == None:
+        if not self.items == None:
+            index = 0
+            for item in self.items:
                 index += 1
                 item.id = index 
-                print(f"\n[{str(item.id)}] {item}")
-            else:
-                pass
-    
-    def grabItem(self, input):
-        for item in self.items:
-         if int(input) == item.id:
-            print(f"\nAdded {item.name} to inventory.")
-            Player.items = [item]
-            self.items.pop(item.id - 1)
+                print(f"\n{Color.YELLOW}[{str(item.id)}]{Color.END} {Color.GREEN}{item.name}{Color.END}: {item.description}")
+        else:
+            print("\nThis place is empty.")
 
         

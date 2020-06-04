@@ -1,7 +1,8 @@
 from room import Room
 from player import Player
-from item import Item
+from item import Item, Weapon
 from color import Color
+import random
 
 # Declare all the rooms
 
@@ -24,8 +25,11 @@ chamber! Sadly, it has already been completely emptied by
 earlier adventurers. The only exit is to the south."""),
 }
 
+# declare all items
+
 items = {
-    'axe': Item("Axe", "has some rust, but still sharp."),
+    'pickaxe': Weapon("Pickaxe", "very rusty, but still sturdy.", "1-2"),
+    'sword': Weapon("Sword", "looks very old, yet sharp as ever!", "3-5"),
     'rock': Item("Rock", "the rock is the size of my fist, but looks pretty usless")
 }
 # Link rooms together
@@ -41,7 +45,7 @@ room['treasure'].s_to = room['narrow']
 
 # creates items in game
 
-room['outside'].setItems(items["axe"], items["rock"])
+room['outside'].setItems(items["pickaxe"], items["rock"])
 room['foyer'].setItems(items["rock"])
 
 # input massage panel
@@ -49,7 +53,7 @@ inputMessage = f"""
      {Color.GREEN}[w]{Color.END} North        {Color.CYAN}[i]{Color.END} Inventory\n
 {Color.YELLOW}[a]{Color.END} West  {Color.YELLOW}[d]{Color.END} East    {Color.PINK}[l]{Color.END} Current Location\n
      {Color.YELLOW}[s]{Color.END} South        {Color.PURPLE}[k]{Color.END} Location Items\n 
-{Color.BLUE}[m]{Color.END} Map    {Color.RED}[q]{Color.END} Quit   {Color.GREEN}[f]{Color.END} Pay respects
+{Color.BLUE}[m]{Color.END} Map    {Color.RED}[q]{Color.END} Quit
 """
 
 # checks if route is available
@@ -81,7 +85,25 @@ def showMap():
 def showLocation():
     print(f"\n{room[player.current]}\n{Color.CYAN}Description:{Color.END} {room[player.current].description}")
 
-# welcomes player
+# grab items from room       
+def grabItem(input):
+    for item in room[player.current].items:
+        if input == item.name:
+            print("------------------------------------------")
+            item.on_take()
+            player.items += [item]
+            room[player.current].items.pop(item.id - 1)
+
+# drops item in current room
+def dropItem(input):
+    for item in player.items:
+        if input == item.name:
+            print("------------------------------------------")
+            item.on_drop()
+            room[player.current].items += [item]
+            player.items.pop(item.id - 1)
+
+# START: welcomes player
 name = input(f"\n{Color.YELLOW}Hello there! What is your name?{Color.END}\n")
 
 if name == '':
@@ -115,33 +137,33 @@ else:
         elif userInput == 'p':
             print("------------------------------------------")
             showLocation()
-        elif userInput == 'f':
+        elif userInput == 'l':
             print("------------------------------------------")
-            print(f"\n{Color.CYAN}Respects Paid.{Color.END}")
+            print(f"\nYou are in {Color.YELLOW}{room[player.current].name}{Color.END},\n{room[player.current].description}")
         elif userInput == 'k':
             # pickup items from room
             print("------------------------------------------")
-            while not userInput == 'g':
+            while not userInput[0] == 'g':
                 print(f"\n{room[player.current].callItems()}\n")
-                userInput = input("[g] Go Back [h] Help\n")
-                if userInput == 'h':
-                    print("\nto pickup an item, enter the number\n")
-                if userInput == 'g':
+                userInput = input(f"{Color.PURPLE}[g]{Color.END} Go Back {Color.PINK}[h]{Color.END} Help\n").split(" ")
+                if userInput[0] == 'h':
+                    print("\nto get an item, type 'take Item'\n")
+                if userInput[0] == 'g':
                     pass
-                elif userInput > "0":
-                    room[player.current].grabItem(userInput)
+                elif len(userInput) == 2:
+                    grabItem(userInput[1])
         elif userInput == 'i':
             # checks inventory
             print("------------------------------------------")
-            while not userInput == 'g':
-                print(f"\n{room[player.current].callItems()}\n")
-                userInput = input("[g] Go Back [h] Help\n")
-                if userInput == 'h':
-                    print("\nto drop an item, enter the number\n")
-                if userInput == 'g':
+            while not userInput[0] == 'g':
+                print(f"\n{player.callItems()}\n")
+                userInput = input(f"{Color.PURPLE}[g]{Color.END} Go Back {Color.PINK}[h]{Color.END} Help\n").split(" ")
+                if userInput[0] == 'h':
+                    print("\nto drop an item, type 'drop Item'\n")
+                if userInput[0] == 'g':
                     pass
-                elif userInput > "0":
-                    room[player.current].dropItem(userInput) #work on this
+                elif len(userInput) == 2:
+                    dropItem(userInput[1])
         else:
             print("------------------------------------------")
             print(f"\n{Color.RED}Sorry, that is not a valid input{Color.END}")
