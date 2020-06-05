@@ -8,6 +8,7 @@ class Room:
         self.name = name
         self.description = description
         self.items = self.setItems()
+        self.enemies = self.setEnemies()
         self.n_to = None
         self.s_to = None
         self.e_to = None
@@ -27,7 +28,10 @@ class Room:
                 index += 1
                 item.id = index 
                 print(f"\n{Color.YELLOW}[{str(item.id)}]{Color.END} {Color.GREEN}{item.name}{Color.END}: {item.description}")
+            print("")
         else:
             print("\nThis place is empty.")
 
-        
+    def setEnemies(self, *args):
+        self.enemies = [e for e in args]
+        return self.enemies   

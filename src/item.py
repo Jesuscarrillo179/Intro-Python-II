@@ -21,4 +21,4 @@ class Weapon(Item):
         self.damage = damage
 
     def __str__(self):
-        return f"{Color.CYAN}{self.name}{Color.END}: {self.description}\nDamage Range:{self.damage}"
+        return f"{Color.CYAN}{self.name}{Color.END}: {self.description}\nDamage Range: {self.damage}"

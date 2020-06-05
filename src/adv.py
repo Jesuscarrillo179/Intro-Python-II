@@ -1,5 +1,5 @@
 from room import Room
-from player import Player
+from player import Player, Enemy
 from item import Item, Weapon
 from color import Color
 import random
@@ -30,8 +30,13 @@ earlier adventurers. The only exit is to the south."""),
 items = {
     'pickaxe': Weapon("Pickaxe", "very rusty, but still sturdy.", "1-2"),
     'sword': Weapon("Sword", "looks very old, yet sharp as ever!", "3-5"),
-    'rock': Item("Rock", "the rock is the size of my fist, but looks pretty usless")
+    'rock': Weapon("Rock", "the rock is the size of my fist, but looks pretty usless", "0-1")
 }
+
+enemies = {
+    'skeleton': Enemy("Skeleton", "foyer", 5, "2-3")
+}
+
 # Link rooms together
 
 room['outside'].n_to = room['foyer']
@@ -45,8 +50,11 @@ room['treasure'].s_to = room['narrow']
 
 # creates items in game
 
-room['outside'].setItems(items["pickaxe"], items["rock"])
+room['outside'].setItems(items["pickaxe"], items["rock"], items["rock"])
 room['foyer'].setItems(items["rock"])
+
+room['foyer'].setEnemies(enemies["skeleton"])
+
 
 # input massage panel
 inputMessage = f"""
@@ -103,8 +111,59 @@ def dropItem(input):
             room[player.current].items += [item]
             player.items.pop(item.id - 1)
 
+#checks for enemies
+def checkEnemies():
+    if len(room[player.current].enemies) > 1:
+        print(f"oh no! you encountered a group of {room[player.current].enemies.name}!")
+        battleMob(player, room[player.current].enemies)
+    elif len(room[player.current].enemies) == 1:
+        print("------------------------------------------")
+        print(f"\noh no! you encountered a {room[player.current].enemies[0].name}!\n")
+        battleMob(player, room[player.current].enemies)
+        pass
+
+def battleMob(player, enemies):
+    if len(enemies) > 1:
+        print("oh you")
+    elif len(enemies) == 1:
+        while enemies[0].health > 0 and player.health > 0:
+            player.callItems()
+            userInput = input("what will you do?    [h] help\n\n").split(" ")
+            if userInput[0] == 'h':
+                print("\nfight commands are swing, throw and run\n")
+            elif userInput[0] == 'run':
+                print("you ran away!")
+                break
+            elif len(userInput) == 2:
+                if userInput[0] == 'swing':
+                    playerDamage = player.attackMob(userInput[1])
+                    enemyDamage = enemies[0].attackPlayer()
+
+                    enemies[0].health -= playerDamage
+                    print(f"\nThe {enemies[0].name} has taken {str(playerDamage)} damage,\nhe is now at {str(enemies[0].health)}!\n")
+                    player.health -= enemyDamage
+                    print(f"the {enemies[0].name} has hit you for {str(enemyDamage)}\n")
+                    print(f"you are now at {str(player.health)}\n")
+                if userInput[0] == 'throw':
+                    playerDamage = player.attackMob(userInput[1])
+                    enemyDamage = enemies[0].attackPlayer()
+
+                    enemies[0].health -= playerDamage
+                    print(f"\nThe {enemies[0].name} has taken {str(playerDamage)} damage,\nhe is now at {str(enemies[0].health)} health!\n")
+                    player.health -= enemyDamage
+                    print(f"the {enemies[0].name} has hit you for {str(enemyDamage)}\n")
+                    print(f"you are now at {str(player.health)} health!\n")
+                    dropItem(userInput[1])
+            else:
+                print("invalid input. try again")
+        if enemies[0].health < 1:
+            print(f"Congrats! You defeated the {enemies[0].name}")
+        else:
+            print(f"\n{Color.RED}game over.{Color.END}")
+            exit()
+
 # START: welcomes player
-name = input(f"\n{Color.YELLOW}Hello there! What is your name?{Color.END}\n")
+name = input(f"\n{Color.YELLOW}Hello there! What is your name?{Color.END}\n\n")
 
 if name == '':
     print(f"{Color.RED}If your not telling, then we are not playing!{Color.END}")
@@ -113,11 +172,12 @@ else:
 
     print(f"\nWelcome {Color.GREEN}{player.name}{Color.END}! Choose your path and start your adventure!\n")
     userInput = input(f"{inputMessage}\n")
-    while not userInput == 'q':
+    while not userInput == 'q' and player.health > 0:
         north = 'n_to'
         south = 's_to'
         east = 'e_to'
         west = 'w_to'
+        checkEnemies()
 
         if userInput == 'w':
             print("------------------------------------------")
@@ -144,8 +204,8 @@ else:
             # pickup items from room
             print("------------------------------------------")
             while not userInput[0] == 'g':
-                print(f"\n{room[player.current].callItems()}\n")
-                userInput = input(f"{Color.PURPLE}[g]{Color.END} Go Back {Color.PINK}[h]{Color.END} Help\n").split(" ")
+                room[player.current].callItems()
+                userInput = input(f"{Color.PURPLE}[g]{Color.END} Go Back {Color.PINK}[h]{Color.END} Help\n\n").split(" ")
                 if userInput[0] == 'h':
                     print("\nto get an item, type 'take Item'\n")
                 if userInput[0] == 'g':
@@ -156,8 +216,8 @@ else:
             # checks inventory
             print("------------------------------------------")
             while not userInput[0] == 'g':
-                print(f"\n{player.callItems()}\n")
-                userInput = input(f"{Color.PURPLE}[g]{Color.END} Go Back {Color.PINK}[h]{Color.END} Help\n").split(" ")
+                player.callItems()
+                userInput = input(f"{Color.PURPLE}[g]{Color.END} Go Back {Color.PINK}[h]{Color.END} Help\n\n").split(" ")
                 if userInput[0] == 'h':
                     print("\nto drop an item, type 'drop Item'\n")
                 if userInput[0] == 'g':
@@ -167,8 +227,6 @@ else:
         else:
             print("------------------------------------------")
             print(f"\n{Color.RED}Sorry, that is not a valid input{Color.END}")
-
         userInput = input(f"{inputMessage}\n")
-
     print(f"\n{Color.RED}game over.{Color.END}")
 
